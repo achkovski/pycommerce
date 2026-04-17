@@ -4,7 +4,8 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{% block title %}PyCommerce{% endblock %}</title>
+    <title>{% block title %}{{ site_settings.store_name }}{% endblock %}</title>
+    {% if site_settings.favicon %}<link rel="icon" href="{{ site_settings.favicon.url }}" />{% endif %}
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -66,8 +67,12 @@
 <header class="sticky top-0 z-40 w-full border-b border-zinc-200/80 bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center gap-6">
         <a href="{% url 'store:home' %}" class="flex items-center gap-2">
-            <span class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-900 text-white font-bold text-sm">P</span>
-            <span class="text-[17px] font-semibold tracking-tight">PyCommerce</span>
+            {% if site_settings.logo %}
+                <img src="{{ site_settings.logo.url }}" alt="{{ site_settings.store_name }}" class="h-8 w-auto" />
+            {% else %}
+                <span class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-900 text-white font-bold text-sm">{{ site_settings.store_name|slice:":1" }}</span>
+            {% endif %}
+            <span class="text-[17px] font-semibold tracking-tight">{{ site_settings.store_name }}</span>
         </a>
 
         <nav class="hidden md:flex items-center gap-1 text-sm">
@@ -206,10 +211,14 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 grid md:grid-cols-4 gap-8 text-sm">
         <div class="md:col-span-2">
             <div class="flex items-center gap-2 mb-3">
-                <span class="inline-flex h-7 w-7 items-center justify-center rounded-md bg-zinc-900 text-white font-bold text-xs">P</span>
-                <span class="font-semibold">PyCommerce</span>
+                {% if site_settings.logo %}
+                    <img src="{{ site_settings.logo.url }}" alt="" class="h-7 w-auto" />
+                {% else %}
+                    <span class="inline-flex h-7 w-7 items-center justify-center rounded-md bg-zinc-900 text-white font-bold text-xs">{{ site_settings.store_name|slice:":1" }}</span>
+                {% endif %}
+                <span class="font-semibold">{{ site_settings.store_name }}</span>
             </div>
-            <p class="text-zinc-500 max-w-sm">A modern Django storefront with a clean, simple checkout.</p>
+            <p class="text-zinc-500 max-w-sm">{{ site_settings.store_tagline }}</p>
         </div>
         <div>
             <h3 class="text-[11px] font-semibold uppercase tracking-wider text-zinc-500 mb-3">Shop</h3>
@@ -229,7 +238,7 @@
     </div>
     <div class="border-t border-zinc-200">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 text-xs text-zinc-500 flex flex-col sm:flex-row items-center justify-between gap-2">
-            <span>&copy; {% now "Y" %} PyCommerce. All rights reserved.</span>
+            <span>&copy; {% now "Y" %} {{ site_settings.store_name }}. All rights reserved.</span>
             <span>Built with Django</span>
         </div>
     </div>

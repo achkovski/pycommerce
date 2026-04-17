@@ -146,6 +146,75 @@ class Hero(models.Model):
         super().save(*args, **kwargs)
 
 
+class SiteSettings(models.Model):
+    """Site-wide branding, about-page copy, contact info, and map coords.
+
+    Singleton: the admin enforces exactly one row. Access via ``SiteSettings.load()``.
+    """
+
+    # Branding
+    store_name = models.CharField(max_length=100, default='PyCommerce')
+    store_tagline = models.CharField(max_length=200, blank=True, default='A modern Django storefront with a clean, simple checkout.')
+    logo = models.ImageField(upload_to='branding/', blank=True, null=True, help_text='Optional — replaces the "P" badge in the navbar')
+    favicon = models.ImageField(upload_to='branding/', blank=True, null=True)
+
+    # Contact info (rendered on the About/Contact page)
+    contact_email = models.EmailField(blank=True, default='hello@pycommerce.example')
+    contact_phone = models.CharField(max_length=40, blank=True)
+    contact_address_line = models.CharField(max_length=200, blank=True, default='PyCommerce HQ')
+    contact_address = models.CharField(max_length=300, blank=True, default='ul. Marshal Tito 123, 7000 Bitola, North Macedonia')
+    contact_hours = models.CharField(max_length=120, blank=True, default='Mon–Fri, 9:00–17:00')
+
+    # Map (Leaflet/OpenStreetMap)
+    map_latitude = models.DecimalField(max_digits=9, decimal_places=6, default=Decimal('41.029700'))
+    map_longitude = models.DecimalField(max_digits=9, decimal_places=6, default=Decimal('21.329700'))
+    map_zoom = models.PositiveSmallIntegerField(default=15)
+    map_popup_title = models.CharField(max_length=120, default='PyCommerce HQ')
+    map_popup_subtitle = models.CharField(max_length=200, blank=True, default='ul. Marshal Tito 123, Bitola')
+
+    # About page — editable copy
+    about_badge = models.CharField(max_length=60, default='Our story')
+    about_headline = models.CharField(max_length=200, default='Commerce, done properly.')
+    about_lead = models.TextField(blank=True, default='PyCommerce is a modern online shop built with Django, combining a clean admin for store owners with a fast, simple checkout for customers.')
+    about_body = models.TextField(blank=True, default='Our mission is straightforward: curate great products, price them fairly, and make browsing effortless.')
+    about_stat_1_value = models.CharField(max_length=20, blank=True, default='10k+')
+    about_stat_1_label = models.CharField(max_length=60, blank=True, default='Happy customers')
+    about_stat_2_value = models.CharField(max_length=20, blank=True, default='500+')
+    about_stat_2_label = models.CharField(max_length=60, blank=True, default='Products curated')
+    about_stat_3_value = models.CharField(max_length=20, blank=True, default='4.9')
+    about_stat_3_label = models.CharField(max_length=60, blank=True, default='Avg. review score')
+    about_stat_4_value = models.CharField(max_length=20, blank=True, default='24h')
+    about_stat_4_label = models.CharField(max_length=60, blank=True, default='Typical ship time')
+
+    # Homepage section visibility toggles
+    show_featured_products = models.BooleanField(default=True)
+    show_on_sale_section = models.BooleanField(default=True)
+    show_category_sections = models.BooleanField(default=True)
+    show_newsletter_section = models.BooleanField(default=True)
+
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'site settings'
+        verbose_name_plural = 'site settings'
+
+    def __str__(self):
+        return self.store_name
+
+    def save(self, *args, **kwargs):
+        self.pk = 1
+        super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        # Singleton — prevent deletion
+        pass
+
+    @classmethod
+    def load(cls):
+        obj, _ = cls.objects.get_or_create(pk=1)
+        return obj
+
+
 class ContactMessage(models.Model):
     name = models.CharField(max_length=120)
     email = models.EmailField()

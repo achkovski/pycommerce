@@ -1,5 +1,6 @@
 Django>=6.0,<6.1
 django-allauth>=65.0
+django-unfold>=0.70
 Pillow>=12.0
 django-crispy-forms>=2.6
 crispy-tailwind>=1.0

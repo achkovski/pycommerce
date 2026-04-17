@@ -78,7 +78,7 @@
     {% endif %}
 
     {# ─────────────────────── FEATURED PRODUCTS ─────────────────────── #}
-    {% if featured_products %}
+    {% if site_settings.show_featured_products and featured_products %}
         <section class="mt-16 lg:mt-20">
             <div class="flex items-end justify-between mb-6 gap-4">
                 <div>
@@ -100,7 +100,7 @@
     {% endif %}
 
     {# ─────────────────────── ON SALE STRIP ─────────────────────── #}
-    {% if on_sale_products %}
+    {% if site_settings.show_on_sale_section and on_sale_products %}
         <section class="mt-16 lg:mt-20">
             <div class="rounded-2xl border border-zinc-200 bg-zinc-900 text-white p-6 md:p-10 overflow-hidden relative">
                 <div class="absolute -right-24 -top-24 w-72 h-72 rounded-full bg-violet-600/30 blur-3xl"></div>
@@ -139,6 +139,7 @@
     {% endif %}
 
     {# ─────────────────────── CATEGORY SPOTLIGHTS ─────────────────────── #}
+    {% if site_settings.show_category_sections %}
     {% for category in featured_categories %}
         {% with cat_products=category.featured_products %}
             {% if cat_products %}
@@ -172,8 +173,10 @@
             {% endif %}
         {% endwith %}
     {% endfor %}
+    {% endif %}
 
     {# ─────────────────────── NEWSLETTER / CTA ─────────────────────── #}
+    {% if site_settings.show_newsletter_section %}
     <section class="mt-20 lg:mt-24">
         <div class="rounded-2xl border border-zinc-200 bg-white p-8 md:p-12 grid md:grid-cols-2 gap-8 items-center">
             <div>
@@ -187,6 +190,7 @@
             </form>
         </div>
     </section>
+    {% endif %}
 
 </div>
 {% endblock %}
