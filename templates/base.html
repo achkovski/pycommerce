@@ -245,6 +245,27 @@
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.js"></script>
+<script>
+  (function () {
+    if (location.pathname.startsWith('/accounts/')) return;
+    function disableAutofill() {
+      document.querySelectorAll('form').forEach(function (f) {
+        f.setAttribute('autocomplete', 'off');
+      });
+      document.querySelectorAll('input:not([type=hidden]):not([type=submit]):not([type=button]):not([type=checkbox]):not([type=radio]), textarea').forEach(function (el) {
+        el.setAttribute('autocomplete', 'off');
+        el.setAttribute('autocorrect', 'off');
+        el.setAttribute('autocapitalize', 'off');
+        el.setAttribute('spellcheck', 'false');
+      });
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', disableAutofill);
+    } else {
+      disableAutofill();
+    }
+  })();
+</script>
 {% block extra_js %}{% endblock %}
 </body>
 </html>
