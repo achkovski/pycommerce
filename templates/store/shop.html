@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {% if active_category %}{{ active_category.name }} — PyCommerce
+    {% elif query %}Search: {{ query }} — PyCommerce
+    {% else %}Shop — PyCommerce{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
+
+    <header class="mb-8">
+        <nav class="flex items-center gap-1.5 text-xs muted mb-3" aria-label="Breadcrumb">
+            <a href="{% url 'store:home' %}" class="hover:text-zinc-900">Home</a>
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            <span class="text-zinc-900 font-medium">
+                {% if active_category %}{{ active_category.name }}
+                {% elif query %}Search
+                {% else %}Shop{% endif %}
+            </span>
+        </nav>
+        <div class="flex flex-wrap items-end justify-between gap-4">
+            <div>
+                <h1 class="text-3xl md:text-4xl font-bold tracking-tight">
+                    {% if active_category %}{{ active_category.name }}
+                    {% elif query %}Results for "{{ query }}"
+                    {% else %}All products{% endif %}
+                </h1>
+                <p class="muted text-sm mt-1">{{ products|length }} product{{ products|length|pluralize }}{% if active_category and active_category.description %} · {{ active_category.description }}{% endif %}</p>
+            </div>
+            <form action="{% url 'store:shop' %}" method="get" class="w-full md:w-72">
+                <div class="relative">
+                    <svg class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8" stroke-width="2"/><path stroke-linecap="round" stroke-width="2" d="m21 21-4.3-4.3"/></svg>
+                    <input type="search" name="q" value="{{ query }}" placeholder="Search products..." class="input pl-9" />
+                </div>
+            </form>
+        </div>
+    </header>
+
+    <div class="grid grid-cols-1 md:grid-cols-[16rem_1fr] gap-8">
+        <aside class="md:sticky md:top-24 md:self-start">
+            <div class="card p-4">
+                <h2 class="text-[11px] font-semibold uppercase tracking-wider muted mb-3 px-1">Categories</h2>
+                <ul class="space-y-0.5 text-sm">
+                    <li>
+                        <a href="{% url 'store:shop' %}"
+                           class="flex items-center justify-between px-2.5 py-1.5 rounded-md {% if not active_category %}bg-zinc-900 text-white font-medium{% else %}text-zinc-700 hover:bg-zinc-100{% endif %}">
+                            <span>All products</span>
+                        </a>
+                    </li>
+                    {% for cat in nav_categories %}
+                        <li>
+                            <a href="{{ cat.get_absolute_url }}"
+                               class="flex items-center justify-between px-2.5 py-1.5 rounded-md {% if active_category and active_category.pk == cat.pk %}bg-zinc-900 text-white font-medium{% else %}text-zinc-700 hover:bg-zinc-100{% endif %}">
+                                <span>{{ cat.name }}</span>
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </aside>
+
+        <section>
+            {% if products %}
+                <div class="grid grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+                    {% for product in products %}
+                        {% include "store/_product_card.html" with product=product %}
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="card p-16 text-center">
+                    <div class="inline-flex h-12 w-12 items-center justify-center rounded-full bg-zinc-100 muted mb-4">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8" stroke-width="2"/><path stroke-linecap="round" stroke-width="2" d="m21 21-4.3-4.3"/></svg>
+                    </div>
+                    <h3 class="font-semibold mb-1">No results</h3>
+                    <p class="muted text-sm">
+                        {% if query %}Nothing matched "<strong>{{ query }}</strong>". Try a different search.{% else %}No products available.{% endif %}
+                    </p>
+                </div>
+            {% endif %}
+        </section>
+    </div>
+
+</div>
+{% endblock %}

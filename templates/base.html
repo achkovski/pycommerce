@@ -1,0 +1,241 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}PyCommerce{% endblock %}</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: { sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'] },
+            colors: {
+              border: 'rgb(228 228 231)',
+              ring: 'rgb(124 58 237)',
+            },
+          },
+        },
+      };
+    </script>
+    <style type="text/tailwindcss">
+      @layer base {
+        body { @apply antialiased font-sans text-zinc-900 bg-white; }
+        h1, h2, h3, h4 { @apply tracking-tight; }
+      }
+      @layer components {
+        .btn { @apply inline-flex items-center justify-center gap-2 rounded-md text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-600 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50; }
+        .btn-primary { @apply btn bg-violet-600 text-white hover:bg-violet-700 h-10 px-4; }
+        .btn-dark { @apply btn bg-zinc-900 text-white hover:bg-zinc-800 h-10 px-4; }
+        .btn-outline { @apply btn border border-zinc-200 bg-white text-zinc-900 hover:bg-zinc-50 h-10 px-4; }
+        .btn-ghost { @apply btn text-zinc-700 hover:bg-zinc-100 h-10 px-3; }
+        .btn-sm { @apply h-9 px-3 text-xs; }
+        .btn-icon { @apply btn h-9 w-9 p-0 text-zinc-700 hover:bg-zinc-100; }
+        .input { @apply flex h-10 w-full rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm placeholder:text-zinc-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-600 focus-visible:ring-offset-1 disabled:opacity-50; }
+        .textarea { @apply flex min-h-[96px] w-full rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm placeholder:text-zinc-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-600; }
+        .card { @apply rounded-xl border border-zinc-200 bg-white; }
+        .badge { @apply inline-flex items-center rounded-full border border-transparent px-2.5 py-0.5 text-xs font-semibold transition; }
+        .badge-secondary { @apply badge bg-zinc-100 text-zinc-900; }
+        .badge-violet { @apply badge bg-violet-50 text-violet-700 border-violet-200; }
+        .badge-red { @apply badge bg-red-50 text-red-700 border-red-200; }
+        .badge-green { @apply badge bg-emerald-50 text-emerald-700 border-emerald-200; }
+        .badge-outline { @apply badge border-zinc-200 text-zinc-700; }
+        .muted { @apply text-zinc-500; }
+        .divider { @apply h-px bg-zinc-200; }
+      }
+      .auth-form input[type="text"],
+      .auth-form input[type="email"],
+      .auth-form input[type="password"],
+      .auth-form input[type="url"] {
+          @apply input;
+      }
+      .auth-form label { @apply block text-sm font-medium mb-1.5 text-zinc-900; }
+      .auth-form ul.errorlist { @apply mt-1 text-sm text-red-600 list-none; }
+      .auth-form .helptext { @apply block mt-1 text-xs text-zinc-500; }
+    </style>
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="min-h-screen flex flex-col bg-white text-zinc-900">
+
+<header class="sticky top-0 z-40 w-full border-b border-zinc-200/80 bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center gap-6">
+        <a href="{% url 'store:home' %}" class="flex items-center gap-2">
+            <span class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-900 text-white font-bold text-sm">P</span>
+            <span class="text-[17px] font-semibold tracking-tight">PyCommerce</span>
+        </a>
+
+        <nav class="hidden md:flex items-center gap-1 text-sm">
+            <a href="{% url 'store:home' %}" class="px-3 py-2 rounded-md text-zinc-700 hover:text-zinc-900 hover:bg-zinc-100 font-medium">Home</a>
+            <a href="{% url 'store:shop' %}" class="px-3 py-2 rounded-md text-zinc-700 hover:text-zinc-900 hover:bg-zinc-100 font-medium">Shop</a>
+            <button type="button" data-dropdown-toggle="nav-categories"
+                    class="flex items-center gap-1 px-3 py-2 rounded-md text-zinc-700 hover:text-zinc-900 hover:bg-zinc-100 font-medium">
+                Categories
+                <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 4 4 4-4"/>
+                </svg>
+            </button>
+            <div id="nav-categories" class="z-50 hidden rounded-md border border-zinc-200 bg-white shadow-lg w-64 p-2">
+                <div class="text-[11px] font-semibold uppercase tracking-wider text-zinc-500 px-2 pt-1 pb-1.5">Browse by</div>
+                <ul>
+                    {% for cat in nav_categories %}
+                        <li><a href="{{ cat.get_absolute_url }}"
+                               class="flex items-center justify-between px-2 py-2 rounded text-sm text-zinc-700 hover:bg-zinc-100">
+                            <span>{{ cat.name }}</span>
+                            <svg class="w-3.5 h-3.5 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                        </a></li>
+                    {% empty %}
+                        <li class="px-2 py-1.5 text-sm text-zinc-400">No categories yet</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <a href="{% url 'store:about' %}" class="px-3 py-2 rounded-md text-zinc-700 hover:text-zinc-900 hover:bg-zinc-100 font-medium">About</a>
+            <a href="{% url 'store:downloads' %}" class="px-3 py-2 rounded-md text-zinc-700 hover:text-zinc-900 hover:bg-zinc-100 font-medium">Downloads</a>
+            <a href="https://www.djangoproject.com/" target="_blank" rel="noopener noreferrer"
+               class="px-3 py-2 rounded-md text-zinc-700 hover:text-zinc-900 hover:bg-zinc-100 font-medium inline-flex items-center gap-1">
+                Partner
+                <svg class="w-3 h-3 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+            </a>
+        </nav>
+
+        <div class="flex-1"></div>
+
+        <form action="{% url 'store:shop' %}" method="get" class="hidden lg:block w-64">
+            <div class="relative">
+                <svg class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8" stroke-width="2"/><path stroke-linecap="round" stroke-width="2" d="m21 21-4.3-4.3"/></svg>
+                <input type="search" name="q" value="{{ request.GET.q|default:'' }}" placeholder="Search products..."
+                       class="input pl-9 h-9 text-sm" />
+            </div>
+        </form>
+
+        <div class="flex items-center gap-1">
+            <a href="{% url 'cart:detail' %}" class="btn-icon relative" aria-label="Cart">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                {% if cart_item_count %}
+                    <span class="absolute -top-0.5 -right-0.5 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-bold text-white bg-violet-600 rounded-full">{{ cart_item_count }}</span>
+                {% endif %}
+            </a>
+
+            {% if user.is_authenticated %}
+                <button type="button" data-dropdown-toggle="user-menu"
+                        class="btn-icon inline-flex" aria-label="User menu">
+                    <span class="inline-flex h-7 w-7 items-center justify-center rounded-full bg-zinc-900 text-white text-xs font-semibold">
+                        {{ user.username|slice:":1"|upper }}
+                    </span>
+                </button>
+                <div id="user-menu" class="z-50 hidden rounded-md border border-zinc-200 bg-white shadow-lg w-56 p-1">
+                    <div class="px-3 py-2">
+                        <div class="text-sm font-medium truncate">{{ user.username }}</div>
+                        <div class="text-xs text-zinc-500 truncate">{{ user.email }}</div>
+                    </div>
+                    <div class="divider my-1"></div>
+                    <a href="{% url 'accounts:profile' %}" class="block px-3 py-1.5 text-sm rounded hover:bg-zinc-100">My account</a>
+                    <a href="{% url 'accounts:orders' %}" class="block px-3 py-1.5 text-sm rounded hover:bg-zinc-100">My orders</a>
+                    {% if user.is_staff %}
+                        <a href="/admin/" class="block px-3 py-1.5 text-sm rounded hover:bg-zinc-100">Admin</a>
+                    {% endif %}
+                    <div class="divider my-1"></div>
+                    <form method="post" action="{% url 'account_logout' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="w-full text-left px-3 py-1.5 text-sm rounded text-red-600 hover:bg-red-50">Sign out</button>
+                    </form>
+                </div>
+            {% else %}
+                <a href="{% url 'account_login' %}" class="hidden sm:inline-flex btn-ghost">Sign in</a>
+                <a href="{% url 'account_signup' %}" class="btn-dark btn-sm">Get started</a>
+            {% endif %}
+
+            <button type="button" data-collapse-toggle="mobile-nav" aria-controls="mobile-nav" aria-expanded="false"
+                    class="md:hidden btn-icon">
+                <span class="sr-only">Open menu</span>
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+            </button>
+        </div>
+    </div>
+
+    <div id="mobile-nav" class="hidden md:hidden border-t border-zinc-200 bg-white">
+        <form action="{% url 'store:shop' %}" method="get" class="p-4">
+            <div class="relative">
+                <svg class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8" stroke-width="2"/><path stroke-linecap="round" stroke-width="2" d="m21 21-4.3-4.3"/></svg>
+                <input type="search" name="q" value="{{ request.GET.q|default:'' }}" placeholder="Search products..." class="input pl-9" />
+            </div>
+        </form>
+        <nav class="px-2 pb-4 space-y-1 text-sm">
+            <a href="{% url 'store:home' %}" class="block px-3 py-2 rounded-md hover:bg-zinc-100 font-medium">Home</a>
+            <a href="{% url 'store:shop' %}" class="block px-3 py-2 rounded-md hover:bg-zinc-100 font-medium">Shop</a>
+            <a href="{% url 'store:about' %}" class="block px-3 py-2 rounded-md hover:bg-zinc-100 font-medium">About</a>
+            <a href="{% url 'store:downloads' %}" class="block px-3 py-2 rounded-md hover:bg-zinc-100 font-medium">Downloads</a>
+            <a href="https://www.djangoproject.com/" target="_blank" rel="noopener noreferrer" class="block px-3 py-2 rounded-md hover:bg-zinc-100 font-medium">Partner &#8599;</a>
+            <div class="divider my-2"></div>
+            <div class="px-3 text-[11px] font-semibold uppercase tracking-wider text-zinc-500 py-1">Categories</div>
+            {% for cat in nav_categories %}
+                <a href="{{ cat.get_absolute_url }}" class="block px-3 py-2 rounded-md text-zinc-700 hover:bg-zinc-100">{{ cat.name }}</a>
+            {% endfor %}
+        </nav>
+    </div>
+</header>
+
+{% if messages %}
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4 w-full space-y-2">
+        {% for message in messages %}
+            <div role="alert"
+                 class="flex items-start gap-3 rounded-md border p-4 text-sm
+                        {% if message.tags == 'error' %}bg-red-50 text-red-900 border-red-200
+                        {% elif message.tags == 'success' %}bg-emerald-50 text-emerald-900 border-emerald-200
+                        {% elif message.tags == 'warning' %}bg-amber-50 text-amber-900 border-amber-200
+                        {% else %}bg-zinc-50 text-zinc-900 border-zinc-200{% endif %}">
+                <svg class="w-4 h-4 flex-shrink-0 mt-0.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm.75-11.75a.75.75 0 00-1.5 0v4.5a.75.75 0 001.5 0v-4.5zM10 15a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
+                </svg>
+                <div class="flex-1">{{ message }}</div>
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
+
+<main class="flex-1 w-full">
+    {% block content %}{% endblock %}
+</main>
+
+<footer class="mt-16 border-t border-zinc-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 grid md:grid-cols-4 gap-8 text-sm">
+        <div class="md:col-span-2">
+            <div class="flex items-center gap-2 mb-3">
+                <span class="inline-flex h-7 w-7 items-center justify-center rounded-md bg-zinc-900 text-white font-bold text-xs">P</span>
+                <span class="font-semibold">PyCommerce</span>
+            </div>
+            <p class="text-zinc-500 max-w-sm">A modern Django storefront with a clean, simple checkout.</p>
+        </div>
+        <div>
+            <h3 class="text-[11px] font-semibold uppercase tracking-wider text-zinc-500 mb-3">Shop</h3>
+            <ul class="space-y-2 text-zinc-700">
+                <li><a href="{% url 'store:shop' %}" class="hover:text-zinc-900">All products</a></li>
+                <li><a href="{% url 'store:downloads' %}" class="hover:text-zinc-900">Downloads</a></li>
+                <li><a href="{% url 'cart:detail' %}" class="hover:text-zinc-900">Cart</a></li>
+            </ul>
+        </div>
+        <div>
+            <h3 class="text-[11px] font-semibold uppercase tracking-wider text-zinc-500 mb-3">Company</h3>
+            <ul class="space-y-2 text-zinc-700">
+                <li><a href="{% url 'store:about' %}" class="hover:text-zinc-900">About &amp; contact</a></li>
+                <li><a href="https://www.djangoproject.com/" target="_blank" rel="noopener noreferrer" class="hover:text-zinc-900">Partner &#8599;</a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="border-t border-zinc-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 text-xs text-zinc-500 flex flex-col sm:flex-row items-center justify-between gap-2">
+            <span>&copy; {% now "Y" %} PyCommerce. All rights reserved.</span>
+            <span>Built with Django</span>
+        </div>
+    </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.js"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

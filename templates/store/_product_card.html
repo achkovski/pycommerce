@@ -1,0 +1,39 @@
+{# Renders a single product as a card. Expects `product`. #}
+<article class="group card overflow-hidden flex flex-col hover:border-zinc-300 hover:shadow-md transition">
+    <a href="{{ product.get_absolute_url }}" class="relative block aspect-square bg-zinc-100 overflow-hidden">
+        {% if product.is_on_sale %}
+            <span class="badge-red absolute top-3 left-3 z-10">Sale</span>
+        {% endif %}
+        {% if product.image %}
+            <img src="{{ product.image.url }}" alt="{{ product.name }}"
+                 class="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
+        {% else %}
+            <div class="w-full h-full flex items-center justify-center text-zinc-400 text-sm">No image</div>
+        {% endif %}
+    </a>
+    <div class="p-4 flex flex-col gap-1.5 flex-1">
+        <a href="{{ product.category.get_absolute_url }}" class="text-[11px] uppercase tracking-wider text-zinc-500 hover:text-violet-600 font-semibold">
+            {{ product.category.name }}
+        </a>
+        <h3 class="text-[15px] font-semibold leading-snug">
+            <a href="{{ product.get_absolute_url }}" class="hover:text-violet-700 line-clamp-2">{{ product.name }}</a>
+        </h3>
+        <div class="mt-auto pt-3 flex items-end justify-between gap-3">
+            <div class="flex items-baseline gap-2">
+                {% if product.is_on_sale %}
+                    <span class="text-lg font-bold text-zinc-900">${{ product.sale_price }}</span>
+                    <span class="text-sm text-zinc-400 line-through">${{ product.price }}</span>
+                {% else %}
+                    <span class="text-lg font-bold text-zinc-900">${{ product.price }}</span>
+                {% endif %}
+            </div>
+            <form method="post" action="{% url 'cart:add' product.id %}">
+                {% csrf_token %}
+                <button type="submit" class="btn-dark btn-sm" aria-label="Add {{ product.name }} to cart">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Add
+                </button>
+            </form>
+        </div>
+    </div>
+</article>

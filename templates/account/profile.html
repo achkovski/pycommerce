@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% block title %}My account — PyCommerce{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
+
+    <header class="mb-8">
+        <span class="badge-violet mb-2">Account</span>
+        <h1 class="text-3xl md:text-4xl font-bold tracking-tight">My account</h1>
+        <p class="muted text-sm mt-1">Manage your profile, orders, and security.</p>
+    </header>
+
+    <div class="grid grid-cols-1 md:grid-cols-[16rem_1fr] gap-8">
+        <aside class="md:sticky md:top-24 md:self-start">
+            <div class="card p-2">
+                <nav class="text-sm space-y-0.5">
+                    <a href="{% url 'accounts:profile' %}"
+                       class="flex items-center gap-2 px-3 py-2 rounded-md bg-zinc-900 text-white font-medium">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                        Overview
+                    </a>
+                    <a href="{% url 'accounts:orders' %}"
+                       class="flex items-center gap-2 px-3 py-2 rounded-md text-zinc-700 hover:bg-zinc-100">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                        Orders
+                    </a>
+                    <a href="{% url 'account_change_password' %}"
+                       class="flex items-center gap-2 px-3 py-2 rounded-md text-zinc-700 hover:bg-zinc-100">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                        Change password
+                    </a>
+                    <div class="divider my-1"></div>
+                    <form method="post" action="{% url 'account_logout' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="w-full flex items-center gap-2 px-3 py-2 rounded-md text-red-600 hover:bg-red-50">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                            Sign out
+                        </button>
+                    </form>
+                </nav>
+            </div>
+        </aside>
+
+        <section class="space-y-6">
+            <div class="card p-6 md:p-7">
+                <div class="flex items-start gap-4 mb-6">
+                    <div class="inline-flex h-14 w-14 items-center justify-center rounded-full bg-zinc-900 text-white font-bold text-xl flex-shrink-0">
+                        {{ user.username|slice:":1"|upper }}
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <h2 class="text-lg font-semibold">Hi, {{ user.username }}</h2>
+                        <p class="muted text-sm">Welcome back to PyCommerce.</p>
+                    </div>
+                </div>
+                <div class="divider mb-5"></div>
+                <dl class="grid sm:grid-cols-2 gap-5 text-sm">
+                    <div>
+                        <dt class="text-[11px] font-semibold uppercase tracking-wider muted mb-1">Username</dt>
+                        <dd class="font-medium">{{ user.username }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-[11px] font-semibold uppercase tracking-wider muted mb-1">Email</dt>
+                        <dd class="font-medium truncate">{{ user.email|default:"—" }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-[11px] font-semibold uppercase tracking-wider muted mb-1">Member since</dt>
+                        <dd class="font-medium">{{ user.date_joined|date:"F j, Y" }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-[11px] font-semibold uppercase tracking-wider muted mb-1">Last sign in</dt>
+                        <dd class="font-medium">{{ user.last_login|date:"F j, Y"|default:"—" }}</dd>
+                    </div>
+                </dl>
+            </div>
+
+            <div class="card p-6 md:p-7">
+                <div class="flex items-center justify-between mb-5">
+                    <div>
+                        <h2 class="text-lg font-semibold">Recent orders</h2>
+                        <p class="muted text-xs mt-0.5">Your latest purchases.</p>
+                    </div>
+                    <a href="{% url 'accounts:orders' %}" class="btn-ghost btn-sm">
+                        See all
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                    </a>
+                </div>
+                {% if recent_orders %}
+                    <ul class="divide-y divide-zinc-200 text-sm -mx-7">
+                        {% for order in recent_orders %}
+                            <li class="py-3.5 px-7 flex items-center justify-between hover:bg-zinc-50 transition">
+                                <div>
+                                    <div class="font-semibold">Order #{{ order.pk }}</div>
+                                    <div class="muted text-xs mt-0.5">{{ order.created_at|date:"M j, Y" }} · {{ order.items.count }} item{{ order.items.count|pluralize }}</div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="font-semibold">${{ order.total_price }}</div>
+                                    {% if order.is_paid %}
+                                        <span class="badge-green mt-1">Paid</span>
+                                    {% else %}
+                                        <span class="badge-secondary mt-1">Pending</span>
+                                    {% endif %}
+                                </div>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <div class="rounded-lg border border-dashed border-zinc-300 p-10 text-center">
+                        <div class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-zinc-100 muted mb-3">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                        </div>
+                        <p class="text-sm muted mb-4">No orders yet.</p>
+                        <a href="{% url 'store:shop' %}" class="btn-dark btn-sm">Start shopping</a>
+                    </div>
+                {% endif %}
+            </div>
+        </section>
+    </div>
+
+</div>
+{% endblock %}
