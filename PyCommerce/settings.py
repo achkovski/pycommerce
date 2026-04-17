@@ -69,6 +69,7 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'cart.context_processors.cart',
                 'store.context_processors.categories',
+                'store.context_processors.site_settings',
             ],
         },
     },
@@ -178,6 +179,11 @@ UNFOLD = {
                 'title': 'Storefront',
                 'separator': True,
                 'items': [
+                    {
+                        'title': 'Site settings',
+                        'icon': 'tune',
+                        'link': '/admin/store/sitesettings/',
+                    },
                     {
                         'title': 'Hero sections',
                         'icon': 'view_carousel',

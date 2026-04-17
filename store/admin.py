@@ -1,7 +1,7 @@
 from django.contrib import admin
 from unfold.admin import ModelAdmin, TabularInline
 
-from .models import Category, ContactMessage, Coupon, Hero, Order, OrderItem, Product
+from .models import Category, ContactMessage, Coupon, Hero, Order, OrderItem, Product, SiteSettings
 
 
 @admin.register(Category)
@@ -68,6 +68,55 @@ class ContactMessageAdmin(ModelAdmin):
     list_editable = ['is_read']
     search_fields = ['name', 'email', 'subject', 'message']
     readonly_fields = ['created_at']
+
+
+@admin.register(SiteSettings)
+class SiteSettingsAdmin(ModelAdmin):
+    fieldsets = (
+        ('Branding', {
+            'fields': ('store_name', 'store_tagline', 'logo', 'favicon'),
+            'description': 'Shown in the navbar, footer and browser tab across the site.',
+        }),
+        ('Contact information', {
+            'fields': ('contact_email', 'contact_phone', 'contact_address_line', 'contact_address', 'contact_hours'),
+            'description': 'Rendered on the About & Contact page and in the footer.',
+        }),
+        ('Map location', {
+            'fields': ('map_latitude', 'map_longitude', 'map_zoom', 'map_popup_title', 'map_popup_subtitle'),
+            'description': 'Leaflet + OpenStreetMap. Tip: right-click on openstreetmap.org to copy lat/lng.',
+        }),
+        ('About page — copy', {
+            'fields': ('about_badge', 'about_headline', 'about_lead', 'about_body'),
+        }),
+        ('About page — stats', {
+            'fields': (
+                ('about_stat_1_value', 'about_stat_1_label'),
+                ('about_stat_2_value', 'about_stat_2_label'),
+                ('about_stat_3_value', 'about_stat_3_label'),
+                ('about_stat_4_value', 'about_stat_4_label'),
+            ),
+            'description': 'Four headline metrics in the About page grid. Leave value blank to hide a stat.',
+        }),
+        ('Home page sections', {
+            'fields': ('show_featured_products', 'show_on_sale_section', 'show_category_sections', 'show_newsletter_section'),
+            'description': 'Toggle which sections appear on the home page.',
+        }),
+    )
+    readonly_fields = ['updated_at']
+
+    def has_add_permission(self, request):
+        # Singleton — allow only if no row exists yet
+        return not SiteSettings.objects.exists()
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def changelist_view(self, request, extra_context=None):
+        # Skip changelist — send straight to the single row's change page
+        obj = SiteSettings.load()
+        from django.shortcuts import redirect
+        from django.urls import reverse
+        return redirect(reverse('admin:store_sitesettings_change', args=[obj.pk]))
 
 
 @admin.register(Hero)
