@@ -16,23 +16,51 @@
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16">
 
-        <div class="space-y-4">
+        <div class="space-y-4" data-gallery>
             <div class="card aspect-square overflow-hidden bg-zinc-100">
                 {% if product.image %}
-                    <img src="{{ product.image.url }}" alt="{{ product.name }}" class="w-full h-full object-cover" />
+                    <img data-gallery-main src="{{ product.image.url }}" alt="{{ product.name }}" class="w-full h-full object-cover" />
                 {% else %}
                     <div class="w-full h-full flex items-center justify-center text-zinc-400">No image</div>
                 {% endif %}
             </div>
-            <div class="grid grid-cols-4 gap-3">
-                {% for i in "1234" %}
-                    <div class="aspect-square rounded-lg border border-zinc-200 bg-zinc-50 overflow-hidden {% if forloop.first %}ring-2 ring-violet-600{% endif %}">
-                        {% if product.image %}
-                            <img src="{{ product.image.url }}" alt="" class="w-full h-full object-cover opacity-{% if forloop.first %}100{% else %}60{% endif %}" />
-                        {% endif %}
-                    </div>
-                {% endfor %}
-            </div>
+            {% if product.images.all %}
+                <div class="grid grid-cols-4 gap-3">
+                    {% if product.image %}
+                        <button type="button" data-gallery-thumb data-src="{{ product.image.url }}"
+                                class="aspect-square rounded-lg border border-zinc-200 bg-zinc-50 overflow-hidden ring-2 ring-violet-600 focus:outline-none">
+                            <img src="{{ product.image.url }}" alt="{{ product.name }}" class="w-full h-full object-cover" />
+                        </button>
+                    {% endif %}
+                    {% for img in product.images.all %}
+                        <button type="button" data-gallery-thumb data-src="{{ img.image.url }}"
+                                class="aspect-square rounded-lg border border-zinc-200 bg-zinc-50 overflow-hidden focus:outline-none hover:border-violet-400 transition">
+                            <img src="{{ img.image.url }}" alt="{{ img.alt|default:product.name }}" class="w-full h-full object-cover opacity-70" />
+                        </button>
+                    {% endfor %}
+                </div>
+                <script>
+                (function () {
+                    const root = document.currentScript.closest('[data-gallery]');
+                    if (!root) return;
+                    const main = root.querySelector('[data-gallery-main]');
+                    const thumbs = root.querySelectorAll('[data-gallery-thumb]');
+                    thumbs.forEach(btn => {
+                        btn.addEventListener('click', () => {
+                            if (main) main.src = btn.dataset.src;
+                            thumbs.forEach(b => {
+                                b.classList.remove('ring-2', 'ring-violet-600');
+                                const img = b.querySelector('img');
+                                if (img) img.classList.add('opacity-70');
+                            });
+                            btn.classList.add('ring-2', 'ring-violet-600');
+                            const img = btn.querySelector('img');
+                            if (img) img.classList.remove('opacity-70');
+                        });
+                    });
+                })();
+                </script>
+            {% endif %}
         </div>
 
         <div>
@@ -68,51 +96,94 @@
 
             <div class="divider mb-6"></div>
 
-            <div class="flex items-center gap-2 text-sm mb-6">
-                {% if product.stock > 0 %}
-                    <span class="inline-flex items-center gap-1.5 text-emerald-700">
-                        <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-                        In stock
+            {% if product.is_digital %}
+                <div class="flex items-center gap-2 text-sm mb-6">
+                    <span class="inline-flex items-center gap-1.5 text-violet-700">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3"/></svg>
+                        Digital download
                     </span>
-                    <span class="muted">· {{ product.stock }} available</span>
-                {% else %}
-                    <span class="inline-flex items-center gap-1.5 text-red-700">
-                        <span class="w-2 h-2 rounded-full bg-red-500"></span>
-                        Out of stock
-                    </span>
-                {% endif %}
-            </div>
-
-            {% if product.stock > 0 %}
-            <form method="post" action="{% url 'cart:add' product.id %}" class="flex flex-col sm:flex-row items-stretch gap-3 mb-6">
-                {% csrf_token %}
-                <div class="flex items-center border border-zinc-200 rounded-md h-11">
-                    <button type="button" onclick="const i=this.nextElementSibling;i.value=Math.max(1,parseInt(i.value||1)-1)" class="w-10 h-full text-zinc-600 hover:bg-zinc-50">−</button>
-                    <input type="number" name="quantity" value="1" min="1" max="{{ product.stock }}" class="w-14 h-full text-center text-sm border-0 focus:outline-none" />
-                    <button type="button" onclick="const i=this.previousElementSibling;i.value=Math.min({{ product.stock }},parseInt(i.value||1)+1)" class="w-10 h-full text-zinc-600 hover:bg-zinc-50">+</button>
+                    <span class="muted">· instant access{% if not product.is_free %}, unlimited after purchase{% endif %}</span>
                 </div>
-                <button type="submit" class="btn-dark flex-1 h-11 px-6">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17"/></svg>
-                    Add to cart
-                </button>
-                <button type="button" class="btn-outline h-11 w-11 p-0" aria-label="Save to wishlist">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
-                </button>
-            </form>
-            {% else %}
-                <button type="button" disabled class="btn-outline h-11 px-6 w-full mb-6 cursor-not-allowed">Out of stock</button>
-            {% endif %}
 
-            {% if product.downloadable_file %}
-                <a href="{% url 'store:download_file' product.id %}" class="flex items-center gap-3 p-4 rounded-lg border border-zinc-200 bg-zinc-50 hover:bg-white hover:border-violet-300 transition">
-                    <span class="inline-flex h-10 w-10 items-center justify-center rounded-md bg-violet-100 text-violet-700">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3"/></svg>
-                    </span>
-                    <div class="flex-1 min-w-0">
-                        <div class="font-medium text-sm">Digital download included</div>
-                        <div class="muted text-xs">Get the attached file after purchase</div>
+                {% if product.is_free %}
+                    <a href="{% url 'store:download_file' product.id %}" class="btn-dark w-full h-11 px-6 mb-6">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3"/></svg>
+                        Download for free
+                    </a>
+                {% elif user_has_purchased %}
+                    <a href="{% url 'store:download_file' product.id %}" class="btn-dark w-full h-11 px-6 mb-6">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3"/></svg>
+                        Download your copy
+                    </a>
+                {% else %}
+                    <form method="post" action="{% url 'cart:add' product.id %}" class="flex items-stretch gap-3 mb-6">
+                        {% csrf_token %}
+                        <input type="hidden" name="quantity" value="1" />
+                        <button type="submit" class="btn-dark flex-1 h-11 px-6">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17"/></svg>
+                            Add to cart
+                        </button>
+                    </form>
+                {% endif %}
+
+                {% if product.downloadable_file %}
+                    <div class="flex items-center gap-3 p-4 rounded-lg border border-zinc-200 bg-zinc-50">
+                        <span class="inline-flex h-10 w-10 items-center justify-center rounded-md bg-violet-100 text-violet-700">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3"/></svg>
+                        </span>
+                        <div class="flex-1 min-w-0">
+                            <div class="font-medium text-sm truncate">{{ product.downloadable_file.name }}</div>
+                            <div class="muted text-xs">Access anytime from your account &middot; no quantity limits</div>
+                        </div>
                     </div>
-                </a>
+                {% endif %}
+            {% else %}
+                <div class="flex items-center gap-2 text-sm mb-6">
+                    {% if product.stock > 0 %}
+                        <span class="inline-flex items-center gap-1.5 text-emerald-700">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                            In stock
+                        </span>
+                        <span class="muted">· {{ product.stock }} available</span>
+                    {% else %}
+                        <span class="inline-flex items-center gap-1.5 text-red-700">
+                            <span class="w-2 h-2 rounded-full bg-red-500"></span>
+                            Out of stock
+                        </span>
+                    {% endif %}
+                </div>
+
+                {% if product.stock > 0 %}
+                <form method="post" action="{% url 'cart:add' product.id %}" class="flex flex-col sm:flex-row items-stretch gap-3 mb-6">
+                    {% csrf_token %}
+                    <div class="flex items-center border border-zinc-200 rounded-md h-11">
+                        <button type="button" onclick="const i=this.nextElementSibling;i.value=Math.max(1,parseInt(i.value||1)-1)" class="w-10 h-full text-zinc-600 hover:bg-zinc-50">−</button>
+                        <input type="number" name="quantity" value="1" min="1" max="{{ product.stock }}" class="w-14 h-full text-center text-sm border-0 focus:outline-none" />
+                        <button type="button" onclick="const i=this.previousElementSibling;i.value=Math.min({{ product.stock }},parseInt(i.value||1)+1)" class="w-10 h-full text-zinc-600 hover:bg-zinc-50">+</button>
+                    </div>
+                    <button type="submit" class="btn-dark flex-1 h-11 px-6">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17"/></svg>
+                        Add to cart
+                    </button>
+                    <button type="button" class="btn-outline h-11 w-11 p-0" aria-label="Save to wishlist">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+                    </button>
+                </form>
+                {% else %}
+                    <button type="button" disabled class="btn-outline h-11 px-6 w-full mb-6 cursor-not-allowed">Out of stock</button>
+                {% endif %}
+
+                {% if product.downloadable_file %}
+                    <a href="{% url 'store:download_file' product.id %}" class="flex items-center gap-3 p-4 rounded-lg border border-zinc-200 bg-zinc-50 hover:bg-white hover:border-violet-300 transition">
+                        <span class="inline-flex h-10 w-10 items-center justify-center rounded-md bg-violet-100 text-violet-700">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3"/></svg>
+                        </span>
+                        <div class="flex-1 min-w-0">
+                            <div class="font-medium text-sm">Download included</div>
+                            <div class="muted text-xs">Get the attached file with your order</div>
+                        </div>
+                    </a>
+                {% endif %}
             {% endif %}
 
             <div class="mt-8 grid grid-cols-3 gap-3 text-xs">
@@ -129,6 +200,27 @@
                     <div class="muted">SSL encrypted</div>
                 </div>
             </div>
+
+            {% if product_sections %}
+                <div class="mt-8 space-y-3">
+                    {% for section in product_sections %}
+                        {% if section.is_collapsible %}
+                            <details class="group rounded-lg border border-zinc-200 bg-white" {% if section.default_open %}open{% endif %}>
+                                <summary class="flex items-center justify-between cursor-pointer list-none px-4 py-3 font-medium text-sm text-zinc-900">
+                                    <span>{{ section.title }}</span>
+                                    <svg class="w-4 h-4 text-zinc-500 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                                </summary>
+                                <div class="px-4 pb-4 text-sm text-zinc-600 leading-relaxed">{{ section.body|linebreaks }}</div>
+                            </details>
+                        {% else %}
+                            <div class="rounded-lg border border-zinc-200 bg-white px-4 py-3">
+                                <div class="font-medium text-sm text-zinc-900 mb-1">{{ section.title }}</div>
+                                <div class="text-sm text-zinc-600 leading-relaxed">{{ section.body|linebreaks }}</div>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            {% endif %}
         </div>
     </div>
 

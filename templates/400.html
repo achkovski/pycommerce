@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Bad request — {{ site_settings.store_name }}{% endblock %}
+
+{% block content %}
+<section class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-24 lg:py-32 text-center">
+    <span class="badge-outline mb-6">400</span>
+    <h1 class="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.05] mb-4">
+        Bad request
+    </h1>
+    <p class="text-lg muted leading-relaxed max-w-xl mx-auto mb-8">
+        Your request couldn't be processed. Please check the URL or try again.
+    </p>
+    <div class="flex flex-wrap justify-center gap-3">
+        <a href="{% url 'store:home' %}" class="btn-dark">Back to home</a>
+        <a href="{% url 'store:shop' %}" class="btn-outline">Browse the shop</a>
+    </div>
+</section>
+{% endblock %}

@@ -7,7 +7,7 @@
     <header class="mb-8">
         <span class="badge-violet mb-2">Digital goods</span>
         <h1 class="text-3xl md:text-4xl font-bold tracking-tight">Downloads</h1>
-        <p class="muted text-sm mt-1 max-w-2xl">Products with attached files you can grab instantly.</p>
+        <p class="muted text-sm mt-1 max-w-2xl">Instant-access digital products. Paid items unlock after purchase.</p>
     </header>
 
     {% if products %}
@@ -20,13 +20,36 @@
                         {% endif %}
                     </div>
                     <div class="flex-1 min-w-0">
-                        <a href="{{ product.get_absolute_url }}" class="font-semibold text-sm hover:text-violet-700">{{ product.name }}</a>
-                        <div class="muted text-xs mt-0.5 truncate">{{ product.downloadable_file.name }}</div>
+                        <div class="flex items-center gap-2">
+                            <a href="{{ product.get_absolute_url }}" class="font-semibold text-sm hover:text-violet-700 truncate">{{ product.name }}</a>
+                            {% if product.is_free %}
+                                <span class="badge-green">Free</span>
+                            {% elif product.id in purchased_ids %}
+                                <span class="badge-violet">Purchased</span>
+                            {% endif %}
+                        </div>
+                        <div class="muted text-xs mt-0.5 flex items-center gap-2">
+                            {% if not product.is_free %}
+                                <span class="font-semibold text-zinc-700">${{ product.final_price }}</span>
+                                <span aria-hidden="true">·</span>
+                            {% endif %}
+                            <span class="truncate">{{ product.downloadable_file.name }}</span>
+                        </div>
                     </div>
-                    <a href="{% url 'store:download_file' product.id %}" class="btn-dark btn-sm">
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3"/></svg>
-                        Download
-                    </a>
+                    {% if product.is_free or product.id in purchased_ids %}
+                        <a href="{% url 'store:download_file' product.id %}" class="btn-dark btn-sm">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3"/></svg>
+                            Download
+                        </a>
+                    {% else %}
+                        <form method="post" action="{% url 'cart:add' product.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn-dark btn-sm">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17"/></svg>
+                                Add to cart
+                            </button>
+                        </form>
+                    {% endif %}
                 </li>
             {% endfor %}
         </ul>
@@ -36,7 +59,7 @@
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3"/></svg>
             </div>
             <h3 class="font-semibold mb-1">No downloads yet</h3>
-            <p class="muted text-sm">Upload a file on any product in the <a href="/admin/" class="text-violet-700 hover:underline">admin</a> to see it here.</p>
+            <p class="muted text-sm">Mark a category as digital and add products with files via the <a href="/admin/" class="text-violet-700 hover:underline">admin</a>.</p>
         </div>
     {% endif %}
 
