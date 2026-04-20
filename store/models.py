@@ -72,6 +72,53 @@ class Product(models.Model):
     def is_digital(self) -> bool:
         return self.category.is_digital
 
+    def variant_groups(self):
+        """Options grouped by their group_name, preserving first-seen order.
+
+        Returns a list like ``[{'name': 'Size', 'options': [<opt>, ...]}, ...]``.
+        Empty when the product has no configured variants.
+        """
+        groups: dict[str, list] = {}
+        for opt in self.variant_options.all():
+            groups.setdefault(opt.group_name, []).append(opt)
+        return [{'name': name, 'options': opts} for name, opts in groups.items()]
+
+
+class ProductVariantOption(models.Model):
+    """One selectable value inside a variant group (e.g. Size → Medium).
+
+    Options sharing the same ``group_name`` on a product form a single selector
+    on the product page. ``price_delta`` is added to the product's base price
+    when that option is chosen; leave it empty for no change.
+    """
+
+    product = models.ForeignKey(Product, related_name='variant_options', on_delete=models.CASCADE)
+    group_name = models.CharField(
+        max_length=100,
+        help_text='Groups options into one selector. e.g. "Size", "Grind".',
+    )
+    value = models.CharField(max_length=100, help_text='e.g. "Small", "Whole bean".')
+    price_delta = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text='Added to the base price when selected. Leave empty for no change.',
+    )
+    sort_order = models.PositiveIntegerField(default=0, help_text='Lower numbers appear first within the group.')
+
+    class Meta:
+        ordering = ['group_name', 'sort_order', 'id']
+        constraints = [
+            models.UniqueConstraint(
+                fields=['product', 'group_name', 'value'],
+                name='uniq_product_variant_option',
+            ),
+        ]
+
+    def __str__(self):
+        return f'{self.group_name}: {self.value}'
+
 
 class ProductImage(models.Model):
     product = models.ForeignKey(Product, related_name='images', on_delete=models.CASCADE)

@@ -11,6 +11,7 @@ from .models import (
     Product,
     ProductImage,
     ProductSection,
+    ProductVariantOption,
     SiteSettings,
 )
 
@@ -41,6 +42,12 @@ class ProductImageInline(TabularInline):
     fields = ['image', 'alt', 'sort_order']
 
 
+class ProductVariantOptionInline(TabularInline):
+    model = ProductVariantOption
+    extra = 0
+    fields = ['group_name', 'value', 'price_delta', 'sort_order']
+
+
 @admin.register(Product)
 class ProductAdmin(ModelAdmin):
     list_display = ['name', 'category', 'price', 'sale_price', 'stock', 'is_available', 'is_featured', 'created_at']
@@ -50,7 +57,7 @@ class ProductAdmin(ModelAdmin):
     search_fields = ['name', 'description']
     prepopulated_fields = {'slug': ('name',)}
     readonly_fields = ['created_at', 'updated_at']
-    inlines = [ProductImageInline]
+    inlines = [ProductImageInline, ProductVariantOptionInline]
     fieldsets = (
         (None, {'fields': ('category', 'name', 'slug', 'description', 'image')}),
         ('Pricing & stock', {'fields': ('price', 'sale_price', 'stock', 'is_available')}),

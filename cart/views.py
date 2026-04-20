@@ -8,6 +8,33 @@ from .cart import Cart
 from .forms import CouponApplyForm
 
 
+VARIANT_PREFIX = 'variant_'
+
+
+def _parse_variants(product: Product, post) -> dict:
+    """Read `variant_<GroupName>` fields from POST and validate them.
+
+    Only values that match a configured option on the product are kept, and
+    every defined group must be chosen — otherwise an empty dict is returned so
+    the caller can surface an error.
+    """
+    defined_groups: dict[str, set[str]] = {}
+    for opt in product.variant_options.all():
+        defined_groups.setdefault(opt.group_name, set()).add(opt.value)
+    if not defined_groups:
+        return {}
+    selected: dict[str, str] = {}
+    for key, value in post.items():
+        if not key.startswith(VARIANT_PREFIX):
+            continue
+        group = key[len(VARIANT_PREFIX):]
+        if group in defined_groups and value in defined_groups[group]:
+            selected[group] = value
+    if set(selected.keys()) != set(defined_groups.keys()):
+        return {}
+    return selected
+
+
 @require_POST
 def cart_add(request, product_id):
     cart = Cart(request)
@@ -17,17 +44,24 @@ def cart_add(request, product_id):
     except (TypeError, ValueError):
         quantity = 1
     override = request.POST.get('override') == 'true'
-    cart.add(product, quantity=quantity, override_quantity=override)
+
+    has_variants = product.variant_options.exists()
+    variants = _parse_variants(product, request.POST) if has_variants else {}
+    if has_variants and not variants:
+        messages.error(request, 'Please choose an option for each variant before adding to the cart.')
+        return redirect(product.get_absolute_url())
+
+    cart.add(product, quantity=quantity, override_quantity=override, variants=variants)
     if request.POST.get('next') == 'cart':
         return redirect('cart:detail')
     return redirect(product.get_absolute_url())
 
 
 @require_POST
-def cart_remove(request, product_id):
-    cart = Cart(request)
-    product = get_object_or_404(Product, pk=product_id)
-    cart.remove(product)
+def cart_remove(request):
+    key = request.POST.get('key', '')
+    if key:
+        Cart(request).remove(key)
     return redirect('cart:detail')
 
 

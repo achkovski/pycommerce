@@ -1,0 +1,23 @@
+{# Variant radio groups. Expects `variant_groups` (list of {name, options}). #}
+{% if variant_groups %}
+    <div class="space-y-4 mb-5" data-variants>
+        {% for group in variant_groups %}
+            <fieldset>
+                <legend class="text-sm font-medium text-zinc-900 mb-2">{{ group.name }}</legend>
+                <div class="flex flex-wrap gap-2">
+                    {% for opt in group.options %}
+                        <label class="cursor-pointer">
+                            <input type="radio" name="variant_{{ group.name }}" value="{{ opt.value }}"
+                                   data-price-delta="{{ opt.price_delta|default_if_none:0 }}"
+                                   class="peer sr-only" required />
+                            <span class="inline-flex items-center gap-1.5 px-3 h-9 rounded-md border border-zinc-200 text-sm bg-white hover:border-violet-400 peer-checked:border-violet-600 peer-checked:bg-violet-50 peer-checked:text-violet-700 peer-focus-visible:ring-2 peer-focus-visible:ring-violet-400">
+                                {{ opt.value }}
+                                {% if opt.price_delta %}<span class="text-zinc-500 text-xs">(+${{ opt.price_delta }})</span>{% endif %}
+                            </span>
+                        </label>
+                    {% endfor %}
+                </div>
+            </fieldset>
+        {% endfor %}
+    </div>
+{% endif %}

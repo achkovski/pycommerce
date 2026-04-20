@@ -65,7 +65,7 @@ def shop(request):
 
 def product_detail(request, slug):
     product = get_object_or_404(
-        _available_products().prefetch_related('images'),
+        _available_products().prefetch_related('images', 'variant_options'),
         slug=slug,
     )
     related = (
@@ -88,6 +88,7 @@ def product_detail(request, slug):
         'related_products': related,
         'user_has_purchased': user_has_purchased,
         'product_sections': sections,
+        'variant_groups': product.variant_groups(),
     })
 
 
