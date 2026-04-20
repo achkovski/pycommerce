@@ -31,19 +31,33 @@
                     <div class="flex-1 min-w-0">
                         <a href="{{ item.product.get_absolute_url }}" class="font-semibold text-sm hover:text-violet-700 line-clamp-1">{{ item.product.name }}</a>
                         <div class="muted text-xs mt-0.5">{{ item.product.category.name }}</div>
+                        {% if item.variants %}
+                            <div class="flex flex-wrap gap-1 mt-1.5">
+                                {% for group, value in item.variants.items %}
+                                    <span class="inline-flex items-center gap-1 rounded-full bg-zinc-100 px-2 py-0.5 text-[11px] text-zinc-700">
+                                        <span class="muted">{{ group }}:</span>
+                                        <span class="font-medium">{{ value }}</span>
+                                    </span>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
                         <div class="text-sm text-zinc-700 mt-1">${{ item.price }}</div>
                     </div>
                     <form method="post" action="{% url 'cart:add' item.product.id %}" class="flex items-center gap-2">
                         {% csrf_token %}
                         <input type="hidden" name="override" value="true" />
                         <input type="hidden" name="next" value="cart" />
+                        {% for group, value in item.variants.items %}
+                            <input type="hidden" name="variant_{{ group }}" value="{{ value }}" />
+                        {% endfor %}
                         <input type="number" name="quantity" value="{{ item.quantity }}" min="1" max="{{ item.product.stock }}"
                                class="input w-16 h-9 text-center text-sm" />
                         <button type="submit" class="btn-ghost btn-sm">Update</button>
                     </form>
                     <div class="hidden sm:block w-20 text-right font-semibold text-sm">${{ item.subtotal }}</div>
-                    <form method="post" action="{% url 'cart:remove' item.product.id %}">
+                    <form method="post" action="{% url 'cart:remove' %}">
                         {% csrf_token %}
+                        <input type="hidden" name="key" value="{{ item.key }}" />
                         <button type="submit" class="btn-icon hover:text-red-600" aria-label="Remove">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M1 7h22M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3"/></svg>
                         </button>

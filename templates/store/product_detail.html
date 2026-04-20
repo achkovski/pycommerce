@@ -81,17 +81,17 @@
                 <span class="text-sm muted">(128 reviews)</span>
             </div>
 
-            <div class="flex items-baseline gap-3 mb-6">
+            <div class="flex items-baseline gap-3 mb-6" data-price-root data-base-price="{{ product.final_price|stringformat:'f' }}">
                 {% if product.is_on_sale %}
-                    <span class="text-3xl md:text-4xl font-bold text-zinc-900">${{ product.sale_price }}</span>
+                    <span class="text-3xl md:text-4xl font-bold text-zinc-900" data-price-display>${{ product.sale_price }}</span>
                     <span class="text-xl text-zinc-400 line-through">${{ product.price }}</span>
                 {% else %}
-                    <span class="text-3xl md:text-4xl font-bold text-zinc-900">${{ product.price }}</span>
+                    <span class="text-3xl md:text-4xl font-bold text-zinc-900" data-price-display>${{ product.price }}</span>
                 {% endif %}
             </div>
 
             {% if product.description %}
-                <div class="text-zinc-600 leading-relaxed mb-6">{{ product.description|linebreaks }}</div>
+                <div class="text-zinc-600 leading-relaxed whitespace-pre-line mb-6">{{ product.description }}</div>
             {% endif %}
 
             <div class="divider mb-6"></div>
@@ -116,10 +116,11 @@
                         Download your copy
                     </a>
                 {% else %}
-                    <form method="post" action="{% url 'cart:add' product.id %}" class="flex items-stretch gap-3 mb-6">
+                    <form method="post" action="{% url 'cart:add' product.id %}" class="mb-6">
                         {% csrf_token %}
                         <input type="hidden" name="quantity" value="1" />
-                        <button type="submit" class="btn-dark flex-1 h-11 px-6">
+                        {% include "store/_variant_selectors.html" with variant_groups=variant_groups %}
+                        <button type="submit" class="btn-dark w-full h-11 px-6">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17"/></svg>
                             Add to cart
                         </button>
@@ -154,20 +155,23 @@
                 </div>
 
                 {% if product.stock > 0 %}
-                <form method="post" action="{% url 'cart:add' product.id %}" class="flex flex-col sm:flex-row items-stretch gap-3 mb-6">
+                <form method="post" action="{% url 'cart:add' product.id %}" class="mb-6">
                     {% csrf_token %}
-                    <div class="flex items-center border border-zinc-200 rounded-md h-11">
-                        <button type="button" onclick="const i=this.nextElementSibling;i.value=Math.max(1,parseInt(i.value||1)-1)" class="w-10 h-full text-zinc-600 hover:bg-zinc-50">−</button>
-                        <input type="number" name="quantity" value="1" min="1" max="{{ product.stock }}" class="w-14 h-full text-center text-sm border-0 focus:outline-none" />
-                        <button type="button" onclick="const i=this.previousElementSibling;i.value=Math.min({{ product.stock }},parseInt(i.value||1)+1)" class="w-10 h-full text-zinc-600 hover:bg-zinc-50">+</button>
+                    {% include "store/_variant_selectors.html" with variant_groups=variant_groups %}
+                    <div class="flex flex-col sm:flex-row items-stretch gap-3">
+                        <div class="flex items-center border border-zinc-200 rounded-md h-11">
+                            <button type="button" onclick="const i=this.nextElementSibling;i.value=Math.max(1,parseInt(i.value||1)-1)" class="w-10 h-full text-zinc-600 hover:bg-zinc-50">−</button>
+                            <input type="number" name="quantity" value="1" min="1" max="{{ product.stock }}" class="w-14 h-full text-center text-sm border-0 focus:outline-none" />
+                            <button type="button" onclick="const i=this.previousElementSibling;i.value=Math.min({{ product.stock }},parseInt(i.value||1)+1)" class="w-10 h-full text-zinc-600 hover:bg-zinc-50">+</button>
+                        </div>
+                        <button type="submit" class="btn-dark flex-1 h-11 px-6">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17"/></svg>
+                            Add to cart
+                        </button>
+                        <button type="button" class="btn-outline h-11 w-11 p-0" aria-label="Save to wishlist">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+                        </button>
                     </div>
-                    <button type="submit" class="btn-dark flex-1 h-11 px-6">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17"/></svg>
-                        Add to cart
-                    </button>
-                    <button type="button" class="btn-outline h-11 w-11 p-0" aria-label="Save to wishlist">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
-                    </button>
                 </form>
                 {% else %}
                     <button type="button" disabled class="btn-outline h-11 px-6 w-full mb-6 cursor-not-allowed">Out of stock</button>
@@ -223,6 +227,28 @@
             {% endif %}
         </div>
     </div>
+
+    {% if variant_groups %}
+    <script>
+    (function () {
+        const priceRoot = document.querySelector('[data-price-root]');
+        if (!priceRoot) return;
+        const base = parseFloat(priceRoot.dataset.basePrice || '0');
+        const display = priceRoot.querySelector('[data-price-display]');
+        if (!display) return;
+        document.querySelectorAll('[data-variants]').forEach(root => {
+            const update = () => {
+                let total = base;
+                root.querySelectorAll('input[type=radio]:checked').forEach(inp => {
+                    total += parseFloat(inp.dataset.priceDelta || '0');
+                });
+                display.textContent = '$' + total.toFixed(2);
+            };
+            root.addEventListener('change', update);
+        });
+    })();
+    </script>
+    {% endif %}
 
     {% if related_products %}
     <section class="mt-20">
