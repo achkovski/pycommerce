@@ -15,6 +15,7 @@ class Category(models.Model):
     featured_order = models.PositiveIntegerField(default=0, help_text='Lower numbers appear first')
     featured_product_count = models.PositiveIntegerField(default=4, help_text='How many products to show in the home section')
     is_digital = models.BooleanField(default=False, help_text='Products in this category are digital downloads — excluded from the shop listings and shown on the Downloads page instead')
+    shop_order = models.PositiveIntegerField(default=0, help_text='Controls the order categories (and their products) appear in the shop. Lower numbers appear first.')
 
     class Meta:
         ordering = ['name']
