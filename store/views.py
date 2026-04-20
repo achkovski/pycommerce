@@ -51,7 +51,7 @@ def home(request):
 
 def shop(request):
     query = request.GET.get('q', '').strip()
-    products = _physical_products()
+    products = _physical_products().order_by('category__shop_order', 'category__name', '-created_at')
     if query:
         products = products.filter(
             Q(name__icontains=query) | Q(description__icontains=query)

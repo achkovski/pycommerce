@@ -18,13 +18,17 @@ from .models import (
 
 @admin.register(Category)
 class CategoryAdmin(ModelAdmin):
-    list_display = ['name', 'slug', 'is_digital', 'is_featured_on_home', 'featured_order', 'featured_product_count']
-    list_editable = ['is_digital', 'is_featured_on_home', 'featured_order', 'featured_product_count']
+    list_display = ['name', 'slug', 'shop_order', 'is_digital', 'is_featured_on_home', 'featured_order', 'featured_product_count']
+    list_editable = ['shop_order', 'is_digital', 'is_featured_on_home', 'featured_order', 'featured_product_count']
     list_filter = ['is_digital', 'is_featured_on_home']
     prepopulated_fields = {'slug': ('name',)}
     search_fields = ['name']
     fieldsets = (
         (None, {'fields': ('name', 'slug', 'description', 'image')}),
+        ('Shop', {
+            'fields': ('shop_order',),
+            'description': 'Controls the order this category (and its products) appears in the shop listing. Lower numbers appear first.',
+        }),
         ('Behaviour', {
             'fields': ('is_digital',),
             'description': 'Digital categories are excluded from the shop and appear on the Downloads page instead.',
