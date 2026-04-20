@@ -1,23 +1,44 @@
 from django.contrib import admin
 from unfold.admin import ModelAdmin, TabularInline
 
-from .models import Category, ContactMessage, Coupon, Hero, Order, OrderItem, Product, SiteSettings
+from .models import (
+    Category,
+    ContactMessage,
+    Coupon,
+    Hero,
+    Order,
+    OrderItem,
+    Product,
+    ProductImage,
+    ProductSection,
+    SiteSettings,
+)
 
 
 @admin.register(Category)
 class CategoryAdmin(ModelAdmin):
-    list_display = ['name', 'slug', 'is_featured_on_home', 'featured_order', 'featured_product_count']
-    list_editable = ['is_featured_on_home', 'featured_order', 'featured_product_count']
-    list_filter = ['is_featured_on_home']
+    list_display = ['name', 'slug', 'is_digital', 'is_featured_on_home', 'featured_order', 'featured_product_count']
+    list_editable = ['is_digital', 'is_featured_on_home', 'featured_order', 'featured_product_count']
+    list_filter = ['is_digital', 'is_featured_on_home']
     prepopulated_fields = {'slug': ('name',)}
     search_fields = ['name']
     fieldsets = (
         (None, {'fields': ('name', 'slug', 'description', 'image')}),
+        ('Behaviour', {
+            'fields': ('is_digital',),
+            'description': 'Digital categories are excluded from the shop and appear on the Downloads page instead.',
+        }),
         ('Homepage', {
             'fields': ('is_featured_on_home', 'featured_order', 'featured_product_count'),
             'description': 'Control how this category appears as a spotlight section on the home page.',
         }),
     )
+
+
+class ProductImageInline(TabularInline):
+    model = ProductImage
+    extra = 1
+    fields = ['image', 'alt', 'sort_order']
 
 
 @admin.register(Product)
@@ -29,12 +50,33 @@ class ProductAdmin(ModelAdmin):
     search_fields = ['name', 'description']
     prepopulated_fields = {'slug': ('name',)}
     readonly_fields = ['created_at', 'updated_at']
+    inlines = [ProductImageInline]
     fieldsets = (
         (None, {'fields': ('category', 'name', 'slug', 'description', 'image')}),
         ('Pricing & stock', {'fields': ('price', 'sale_price', 'stock', 'is_available')}),
         ('Homepage', {'fields': ('is_featured', 'featured_order')}),
         ('Download', {'fields': ('downloadable_file',)}),
         ('Metadata', {'fields': ('created_at', 'updated_at'), 'classes': ('collapse',)}),
+    )
+
+
+@admin.register(ProductSection)
+class ProductSectionAdmin(ModelAdmin):
+    list_display = ['title', 'scope', 'category', 'product', 'is_collapsible', 'default_open', 'sort_order', 'is_active']
+    list_editable = ['sort_order', 'is_active']
+    list_filter = ['scope', 'is_active', 'category']
+    search_fields = ['title', 'body']
+    autocomplete_fields = ['product', 'category']
+    fieldsets = (
+        (None, {'fields': ('title', 'body', 'is_active', 'sort_order')}),
+        ('Where to show', {
+            'fields': ('scope', 'category', 'product'),
+            'description': 'Global shows on every product. Category/Product require the matching field to be filled in.',
+        }),
+        ('Display', {
+            'fields': ('is_collapsible', 'default_open'),
+            'description': 'When not collapsible, default_open is ignored — the section is always expanded.',
+        }),
     )
 
 

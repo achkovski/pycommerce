@@ -210,6 +210,11 @@ UNFOLD = {
                         'icon': 'local_offer',
                         'link': '/admin/store/coupon/',
                     },
+                    {
+                        'title': 'Product sections',
+                        'icon': 'view_agenda',
+                        'link': '/admin/store/productsection/',
+                    },
                 ],
             },
             {

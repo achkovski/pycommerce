@@ -14,6 +14,7 @@ class Category(models.Model):
     is_featured_on_home = models.BooleanField(default=False, help_text='Show this category as its own section on the home page')
     featured_order = models.PositiveIntegerField(default=0, help_text='Lower numbers appear first')
     featured_product_count = models.PositiveIntegerField(default=4, help_text='How many products to show in the home section')
+    is_digital = models.BooleanField(default=False, help_text='Products in this category are digital downloads — excluded from the shop listings and shown on the Downloads page instead')
 
     class Meta:
         ordering = ['name']
@@ -62,6 +63,77 @@ class Product(models.Model):
     @property
     def is_on_sale(self) -> bool:
         return self.sale_price is not None and self.sale_price < self.price
+
+    @property
+    def is_free(self) -> bool:
+        return self.final_price == 0
+
+    @property
+    def is_digital(self) -> bool:
+        return self.category.is_digital
+
+
+class ProductImage(models.Model):
+    product = models.ForeignKey(Product, related_name='images', on_delete=models.CASCADE)
+    image = models.ImageField(upload_to='products/')
+    alt = models.CharField(max_length=200, blank=True, help_text='Alt text for screen readers')
+    sort_order = models.PositiveIntegerField(default=0, help_text='Lower numbers appear first')
+
+    class Meta:
+        ordering = ['sort_order', 'id']
+
+    def __str__(self):
+        return f'Image for {self.product.name}'
+
+
+class ProductSection(models.Model):
+    SCOPE_GLOBAL = 'global'
+    SCOPE_CATEGORY = 'category'
+    SCOPE_PRODUCT = 'product'
+    SCOPE_CHOICES = [
+        (SCOPE_GLOBAL, 'Global — show on every product'),
+        (SCOPE_CATEGORY, 'Category — show on all products in a category'),
+        (SCOPE_PRODUCT, 'Product — show on a single product'),
+    ]
+
+    title = models.CharField(max_length=200)
+    body = models.TextField(help_text='Supports line breaks. Rendered as plain text.')
+    scope = models.CharField(max_length=20, choices=SCOPE_CHOICES, default=SCOPE_GLOBAL)
+    category = models.ForeignKey(
+        Category,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='product_sections',
+        help_text='Required when scope is Category.',
+    )
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='sections',
+        help_text='Required when scope is Product.',
+    )
+    is_collapsible = models.BooleanField(default=True, help_text='If off, the section always shows expanded with no toggle.')
+    default_open = models.BooleanField(default=False, help_text='When collapsible, controls whether the section starts expanded.')
+    sort_order = models.PositiveIntegerField(default=0, help_text='Lower numbers appear first')
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ['sort_order', 'id']
+
+    def __str__(self):
+        return f'{self.title} ({self.get_scope_display()})'
+
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        if self.scope == self.SCOPE_CATEGORY and self.category_id is None:
+            raise ValidationError({'category': 'Choose a category for a category-scoped section.'})
+        if self.scope == self.SCOPE_PRODUCT and self.product_id is None:
+            raise ValidationError({'product': 'Choose a product for a product-scoped section.'})
+        if self.scope == self.SCOPE_GLOBAL and (self.category_id or self.product_id):
+            raise ValidationError('Global sections must not have a category or product set.')
 
 
 class Coupon(models.Model):

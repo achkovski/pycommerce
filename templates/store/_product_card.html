@@ -20,20 +20,29 @@
         </h3>
         <div class="mt-auto pt-3 flex items-end justify-between gap-3">
             <div class="flex items-baseline gap-2">
-                {% if product.is_on_sale %}
+                {% if product.is_digital and product.is_free %}
+                    <span class="text-lg font-bold text-emerald-700">Free</span>
+                {% elif product.is_on_sale %}
                     <span class="text-lg font-bold text-zinc-900">${{ product.sale_price }}</span>
                     <span class="text-sm text-zinc-400 line-through">${{ product.price }}</span>
                 {% else %}
                     <span class="text-lg font-bold text-zinc-900">${{ product.price }}</span>
                 {% endif %}
             </div>
-            <form method="post" action="{% url 'cart:add' product.id %}">
-                {% csrf_token %}
-                <button type="submit" class="btn-dark btn-sm" aria-label="Add {{ product.name }} to cart">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                    Add
-                </button>
-            </form>
+            {% if product.is_digital and product.is_free %}
+                <a href="{% url 'store:download_file' product.id %}" class="btn-dark btn-sm" aria-label="Download {{ product.name }}">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3"/></svg>
+                    Get
+                </a>
+            {% else %}
+                <form method="post" action="{% url 'cart:add' product.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-dark btn-sm" aria-label="Add {{ product.name }} to cart">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                        Add
+                    </button>
+                </form>
+            {% endif %}
         </div>
     </div>
 </article>

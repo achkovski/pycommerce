@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Page not found — {{ site_settings.store_name }}{% endblock %}
+
+{% block content %}
+<section class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-24 lg:py-32 text-center">
+    <span class="badge-violet mb-6">404</span>
+    <h1 class="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.05] mb-4">
+        We couldn't find that page
+    </h1>
+    <p class="text-lg muted leading-relaxed max-w-xl mx-auto mb-8">
+        The link may be broken, the page may have moved, or it never existed.
+        Let's get you back on track.
+    </p>
+    <div class="flex flex-wrap justify-center gap-3">
+        <a href="{% url 'store:home' %}" class="btn-dark">Back to home</a>
+        <a href="{% url 'store:shop' %}" class="btn-outline">Browse the shop</a>
+    </div>
+
+    <div class="mt-16 grid sm:grid-cols-3 gap-4 text-left">
+        <a href="{% url 'store:shop' %}" class="card p-5 hover:border-zinc-300 transition">
+            <div class="text-[11px] font-semibold uppercase tracking-wider text-zinc-500 mb-1">Shop</div>
+            <div class="font-semibold">All products</div>
+            <div class="muted text-sm mt-1">Everything in the catalog.</div>
+        </a>
+        <a href="{% url 'store:downloads' %}" class="card p-5 hover:border-zinc-300 transition">
+            <div class="text-[11px] font-semibold uppercase tracking-wider text-zinc-500 mb-1">Digital</div>
+            <div class="font-semibold">Downloads</div>
+            <div class="muted text-sm mt-1">Grab files you've purchased.</div>
+        </a>
+        <a href="{% url 'store:about' %}" class="card p-5 hover:border-zinc-300 transition">
+            <div class="text-[11px] font-semibold uppercase tracking-wider text-zinc-500 mb-1">Company</div>
+            <div class="font-semibold">About &amp; contact</div>
+            <div class="muted text-sm mt-1">Who we are and how to reach us.</div>
+        </a>
+    </div>
+</section>
+{% endblock %}
