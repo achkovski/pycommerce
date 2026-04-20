@@ -135,7 +135,8 @@ class SiteSettingsAdmin(ModelAdmin):
             'description': 'Leaflet + OpenStreetMap. Tip: right-click on openstreetmap.org to copy lat/lng.',
         }),
         ('About page — copy', {
-            'fields': ('about_badge', 'about_headline', 'about_lead', 'about_body'),
+            'fields': ('about_badge', 'about_headline', 'about_lead', 'about_body', 'about_video_file', 'about_video_url'),
+            'description': 'Video: upload a file (MP4) OR paste an embed URL. File takes priority. Leave both blank to show a placeholder.',
         }),
         ('About page — stats', {
             'fields': (

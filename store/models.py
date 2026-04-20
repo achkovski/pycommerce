@@ -292,6 +292,16 @@ class SiteSettings(models.Model):
     map_popup_subtitle = models.CharField(max_length=200, blank=True, default='ul. Marshal Tito 123, Bitola')
 
     # About page — editable copy
+    about_video_file = models.FileField(
+        upload_to='about/',
+        blank=True,
+        null=True,
+        help_text='Upload a video file (MP4 recommended). Takes priority over the URL below.',
+    )
+    about_video_url = models.URLField(
+        blank=True,
+        help_text='YouTube/Vimeo embed URL (e.g. https://www.youtube.com/embed/…). Used when no file is uploaded.',
+    )
     about_badge = models.CharField(max_length=60, default='Our story')
     about_headline = models.CharField(max_length=200, default='Commerce, done properly.')
     about_lead = models.TextField(blank=True, default='PyCommerce is a modern online shop built with Django, combining a clean admin for store owners with a fast, simple checkout for customers.')
