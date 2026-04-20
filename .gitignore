@@ -9,3 +9,4 @@ venv/
 media/
 staticfiles/
 *.log
+CLAUDE.md
